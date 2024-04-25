@@ -56,7 +56,8 @@ In order to transcribe multiple songs at the same time, you need to launch the `
 
 This should launch a small GUI window where you can drag multiple files onto. Once you do, look in the console for that window to see the progress of the conversion. The GUI window does not update you on the status of the conversion.
 
-![image](https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/823d1410-b4bb-4d22-bacd-c3b4b028f633)
+![image](https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/9c01d02b-61f6-4f4c-a66b-095fa4fd9a7a)
+
 
 
 ## Known bugs
