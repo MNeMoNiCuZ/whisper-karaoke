@@ -4,6 +4,24 @@ Whisper Karaoke is a small script that takes mp3-files as input, and uses the [f
 This is then used in a small web-player in a Karaoke-like fashion, by highlighting the words as they appear.
 ![image](https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/3930f3a0-e46e-4a45-8cda-05fbab531a90)
 
+## Video Examples
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/ab030773-e4b5-4e1e-ac65-37c76e8d3e1a
+
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/333e2be4-e34d-4ddd-9ce9-7ffe1aa2f922
+
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/eae45e04-1751-4cad-b6c1-f6a205cddf1c
+
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/955d15d1-63b2-4f26-a350-879cf82cd09c
+
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/7830f598-0d1e-404a-9e57-58f1cc8e3fff
+
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/92bbbcf9-7914-4e79-9a39-5b46c961c5e7
+
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/06ff3d73-3d64-4393-aa1f-c6b545b1a029
+
+https://github.com/MNeMoNiCuZ/whisper-karaoke/assets/60541708/af59895e-d656-4723-9bb6-bddfe2a687a0
+
+
 
 
 ## Requirements
