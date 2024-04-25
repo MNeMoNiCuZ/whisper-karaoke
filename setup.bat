@@ -38,6 +38,15 @@ echo echo Application exited. Press any key to close... >> launch.bat
 echo pause >> launch.bat
 echo launch.bat created successfully.
 
+echo Attempting to create batch_convert.bat to run batch_convert.py...
+echo @echo off > batch_convert.bat
+echo call venv\Scripts\activate >> batch_convert.bat
+echo python batch_convert.py >> batch_convert.bat
+echo echo. >> batch_convert.bat
+echo echo Batch conversion completed. Press any key to close... >> batch_convert.bat
+echo pause >> batch_convert.bat
+echo batch_convert.bat created successfully.
+
 :end
 echo Setup complete. Virtual environment is ready to use.
 pause
