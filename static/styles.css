@@ -1,0 +1,79 @@
+﻿body, html {
+    height: 100%;
+    background-color: #121212;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+#lyrics_container {
+    position: relative;
+    overflow: hidden;
+    scroll-behavior: smooth; /* Add smooth scroll behavior */
+}
+
+#lyrics_display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+#drop_area {
+    border: 2px dashed #bbb;
+    border-radius: 10px;
+    padding: 50px;
+    color: #bbb;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    width: 60%;
+    text-align: center;
+    margin: auto;
+    margin-bottom: 30px;
+    width: 16%;
+}
+
+#drop_area:hover {
+    background-color: #333;
+    border-color: #fff;
+}
+
+#status_display {
+    padding: 5px;
+    margin: 5px auto;
+    font-size: 20px;
+}
+
+#lyrics_display {
+    text-align: center;
+    font-size: 24px; /* This controls the general font size in the lyrics display area */
+    margin: 20px;
+}
+
+#lyrics_display div {
+    margin: 10px 0; /* Spacing between lines */
+}
+
+.line {
+    font-size: 30px; /* Adjusted font size for visibility */
+    line-height: 40px; /* Height of each line, adjust as needed */
+    height: 40px; /* Ensures each line has a fixed height */
+    color: gray; /* Default color for non-current lines */
+    margin-bottom: 5px; /* Space between lines */
+}
+
+.highlight {
+    color: #FFD700 !important;
+    font-weight: bold;
+    font-size: 35px; /* Size for highlighted words to make them stand out */
+}
+
+.audio {
+    width: 100%;
+}
+
+.line span {
+    font-size: 30px; /* Ensures alignment with line font size */
+    transition: color 0.75s ease; /* Smooth transition for color change */
+}

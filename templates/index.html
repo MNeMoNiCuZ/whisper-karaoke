@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Karaoke App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="content-container">
+        <div id="drop_area">Drop your MP3 here</div>
+        <select id="mp3_selector" onchange="selectMP3()">
+            <option>Select an MP3</option>
+            {% for mp3 in mp3_files %}
+            <option value="{{ mp3 }}">{{ mp3 }}</option>
+            {% endfor %}
+        </select>
+        <div id="status_display"></div>
+        <audio id="audio_player" controls hidden style="width: 60%;"></audio>
+        <div id="lyrics_container">
+            <div id="lyrics_display"></div>
+        </div>
+    <script>
+        document.getElementById('drop_area').addEventListener('dragover', (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+        });
+
+        document.getElementById('drop_area').addEventListener('drop', (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            const files = event.dataTransfer.files;
+            if (files.length) {
+                uploadFile(files[0]);
+            }
+        });
+
+// Configuration option to hide MP3 controls after loading a file
+const hideControlsAfterLoading = true;
+
+function uploadFile(file) {
+    const url = '/upload';
+    const formData = new FormData();
+    formData.append('file', file);
+    const statusDisplay = document.getElementById('status_display');
+    statusDisplay.innerHTML = file.name + " uploaded. Transcription starting...";
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+    }).then(response => response.json())
+    .then(data => {
+        if (data.filename) {
+            statusDisplay.innerHTML = "Transcription finished!";
+            loadAndDisplayKaraoke(data.filename);
+        } else {
+            statusDisplay.innerHTML = "Failed to upload file: " + data.message;
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading file:', error);
+        statusDisplay.innerHTML = "Error uploading file: See console for details.";
+    });
+}
+
+function selectMP3() {
+    const selector = document.getElementById('mp3_selector');
+    const filename = selector.value;
+    if (filename) {
+        loadAndDisplayKaraoke(filename + '.mp3');
+    }
+}
+
+function fetchMP3s() {
+    console.log("Starting fetchMP3s function.");
+    const url = '/list_mp3s';
+    console.log(`Making fetch request to: ${url}`);
+
+    fetch(url)
+    .then(response => {
+        console.log("Received response from /list_mp3s");
+        if (!response.ok) {
+            throw new Error(`Failed to fetch MP3s: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Data received:", data);
+        const selector = document.getElementById('mp3_selector');
+        if (data.length === 0) {
+            console.log("No MP3 files found.");
+        }
+        data.forEach(file => {
+            const option = document.createElement('option');
+            option.value = file.replace('.mp3', '');
+            option.textContent = file.replace('.mp3', '');
+            selector.appendChild(option);
+        });
+    })
+    .catch(error => console.error('Error fetching MP3 files:', error));
+}
+
+window.onload = () => {
+    console.log("Window onload triggered.");
+    fetchMP3s();  // Confirm this is being called when the page loads
+};
+
+function hideMP3Controls() {
+    console.log("Hiding MP3 controls");
+    const dropArea = document.getElementById('drop_area');
+    const mp3Selector = document.getElementById('mp3_selector');
+    dropArea.style.display = 'none';
+    mp3Selector.style.display = 'none';
+}
+
+function loadAndDisplayKaraoke(filename) {
+    console.log("Starting loadAndDisplayKaraoke");
+    console.log(`Loading audio for file: ${filename}`);
+    const audioPlayer = document.getElementById('audio_player');
+    audioPlayer.src = `/static/tracks/${filename}`;
+    audioPlayer.load();
+    audioPlayer.hidden = false;
+    audioPlayer.volume = 0.8;
+    audioPlayer.onloadedmetadata = () => {
+        console.log(`Metadata loaded for audio: duration ${audioPlayer.duration}s`);
+        fetchDataAndDisplayLyrics(filename);
+        if (hideControlsAfterLoading) {
+            hideMP3Controls();
+        }
+    };
+    console.log("Finished loadAndDisplayKaraoke");
+}
+
+function fetchDataAndDisplayLyrics(filename) {
+    console.log("Starting fetchDataAndDisplayLyrics");
+    const baseFilename = filename.replace('.mp3', '');
+    fetch(`/static/tracks/${baseFilename}_lines.txt`)
+        .then(response => response.text())
+        .then(linesText => fetch(`/static/tracks/${baseFilename}_words.txt`).then(response => response.text())
+        .then(wordsText => {
+            const lines = parseLines(linesText);
+            const words = parseWords(wordsText);
+            displayLyrics(lines, words);
+            document.getElementById('status_display').innerHTML = baseFilename;
+        }));
+    console.log("Finished fetchDataAndDisplayLyrics");
+}
+
+function parseLines(text) {
+    console.log("Starting parseLines");
+    return text.split('\n').map(line => {
+        const parts = line.match(/(\d+\.\d+)s -> (\d+\.\d+)s] (.+)/);
+        return parts ? {start: parseFloat(parts[1]), end: parseFloat(parts[2]), text: parts[3]} : null;
+    }).filter(Boolean);
+    console.log("Finished parseLines");
+}
+
+function parseWords(text) {
+    console.log("Starting parseWords");
+    let wordIndex = 0; // Global index reset
+    return text.split('\n').map(line => {
+        const parts = line.match(/(\d+\.\d+)s -> (\d+\.\d+)s] (.+)/);
+        if (parts) {
+            console.log(`Parsed word '${parts[3]}' with global index ${wordIndex}`);
+            return {start: parseFloat(parts[1]), end: parseFloat(parts[2]), word: parts[3], index: wordIndex++}; // Global unique index
+        }
+        return null;
+    }).filter(Boolean);
+    console.log("Finished parseWords");
+}
+
+function displayLyrics(lines, words) {
+    console.log("Starting displayLyrics");
+    const lyricsDisplay = document.getElementById('lyrics_display');
+    lyricsDisplay.innerHTML = '';
+    let wordIndex = 0; // Initialize wordIndex here
+
+    lines.forEach((line, lineIndex) => {
+        let wordsForLine = [];
+
+        // Ensure that word collection correctly respects line boundaries
+        while (wordIndex < words.length && words[wordIndex].end < line.start) {
+            wordIndex++; // Skip words that end before the line starts
+        }
+
+        // Collect words that start and end within the line's time frame
+        while (wordIndex < words.length && words[wordIndex].start < line.end) {
+            if (words[wordIndex].start >= line.start && words[wordIndex].end <= line.end) {
+                wordsForLine.push(words[wordIndex]);
+            }
+            if (words[wordIndex].end > line.end) break; // Stop adding words if the current word ends after the line
+            wordIndex++; // Increment wordIndex only if the word ends before the next line
+        }
+
+        console.log(`Processing line ${lineIndex}: '${line.text}'`);
+        console.log(`Words for line ${lineIndex}: ${wordsForLine.map(w => `${w.word} (${w.start}s - ${w.end}s)`).join(', ')}`);
+        setupLineDisplay(line, wordsForLine);
+    });
+
+    adjustLyricsContainerHeight();  // Adjust the container height based on the line heights
+    setupHighlighting(lines, words);
+    console.log("Finished displayLyrics");
+}
+
+function setupLineDisplay(line, wordsForLine) {
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'line';
+    wordsForLine.forEach(word => {
+        const wordSpan = document.createElement('span');
+        wordSpan.textContent = word.word + ' ';
+        wordSpan.className = 'normal';
+        wordSpan.setAttribute('data-word-index', word.index);
+        lineDiv.appendChild(wordSpan);
+    });
+    document.getElementById('lyrics_display').appendChild(lineDiv);
+}
+
+function adjustLyricsContainerHeight() {
+    // Use the first line if it exists to get computed styles, otherwise use default values
+    const exampleLine = document.querySelector('.line');
+    const styles = exampleLine ? getComputedStyle(exampleLine) : null;
+    
+    // Fetch line height and margin from CSS or use defaults if not available
+    const lineHeight = styles ? parseInt(styles.height, 10) : 40; // Default to 40 if no line is present
+    const marginBottom = styles ? parseInt(styles.marginBottom, 10) : 5; // Default to 5 if no line is present
+    
+    const visibleLinesCount = 4; // Number of lines you want to display
+    const offset = -25; // Custom offset to adjust the container height
+
+    // Calculate the container height based on fetched styles and the specified number of lines
+    const containerHeight = (lineHeight + marginBottom) * visibleLinesCount - marginBottom + offset;
+    document.getElementById('lyrics_container').style.height = `${containerHeight}px`;
+}
+
+// Ensure the container height is adjusted when the page is loaded or when styles might have changed
+window.onload = adjustLyricsContainerHeight;
+
+function setupHighlighting(lines, words) {
+    console.log("Starting setupHighlighting");
+    const audio = document.getElementById('audio_player');
+    let lastHighlightedLineIndex = -1; // Initialize outside of the timeupdate to maintain state
+
+    audio.addEventListener('timeupdate', () => {
+        const currentTime = audio.currentTime;
+        handleWordHighlighting(words, currentTime);
+        const currentLineIndex = lines.findIndex(line => currentTime >= line.start && currentTime < line.end);
+
+        // Update line highlighting and manage line index state
+        lastHighlightedLineIndex = handleLineHighlighting(currentLineIndex, lastHighlightedLineIndex);
+    });
+
+    console.log("Finished setupHighlighting");
+}
+
+function handleLineHighlighting(currentLineIndex, lastHighlightedLineIndex) {
+    console.log(`Attempting to handle line highlighting. Current index: ${currentLineIndex}, Last index: ${lastHighlightedLineIndex}`);
+    if (currentLineIndex !== lastHighlightedLineIndex) {
+        console.log(`Line index changed from ${lastHighlightedLineIndex} to ${currentLineIndex}`);
+        clearPreviousHighlights(lastHighlightedLineIndex);
+        highlightCurrentLine(currentLineIndex);
+        lastHighlightedLineIndex = currentLineIndex; // Update the last highlighted index after changing lines
+    } else {
+        console.log(`No change in line index: remains at ${currentLineIndex}. No action taken.`);
+    }
+    return lastHighlightedLineIndex; // Ensure we return the updated index to maintain state across updates
+}
+
+
+function scrollToHighlightedLine(lineElement) {
+    const container = document.getElementById('lyrics_container');
+    const display = document.getElementById('lyrics_display');
+    const lineOffset = lineElement.offsetTop;
+    const containerHalfHeight = container.offsetHeight / 2;
+    const lineHalfHeight = lineElement.offsetHeight / 2;
+
+    // Calculate new top position to center the line in the container
+    const newTopPosition = lineOffset - containerHalfHeight + lineHalfHeight;
+
+    // Apply new top position
+    display.style.top = `-${newTopPosition}px`;
+    console.log(`Scrolling to top: -${newTopPosition}px`);
+}
+
+function clearPreviousHighlights(index) {
+    if (index !== -1) {
+        const lastLineDiv = document.querySelectorAll('.line')[index];
+        Array.from(lastLineDiv.children).forEach(span => {
+            span.className = 'normal'; // Reset to normal class
+            span.style.color = 'gray'; // Explicitly reset the color back to gray
+        });
+        console.log(`Cleared highlighting from line ${index}`);
+    }
+}
+
+function highlightCurrentLine(index) {
+    const lines = document.querySelectorAll('.line');
+    const lyricsContainer = document.getElementById('lyrics_container');
+
+    if (index !== -1 && index < lines.length) {
+        const currentLine = lines[index];
+        currentLine.style.color = 'white'; // Highlight the current line in white
+        Array.from(currentLine.children).forEach(span => {
+            span.style.color = 'white'; // Ensure all spans in the current line are set to white
+        });
+
+        // Calculate necessary heights and offsets
+        const lineHeight = currentLine.offsetHeight;
+        const containerHeight = lyricsContainer.clientHeight;
+        const halfContainerHeight = containerHeight / 2;
+        const halfLineHeight = lineHeight / 2;
+
+        // Global offset to adjust the centering, modify this value to shift centering
+        const globalOffset = 20; // Negative moves up, positive moves down
+
+        // Calculate the scroll position
+        const scrollPosition = currentLine.offsetTop - halfContainerHeight + halfLineHeight + globalOffset;
+        lyricsContainer.scrollTop = scrollPosition;
+
+        console.log(`Scrolled to line ${index}, new scroll top: ${scrollPosition}px`);
+    } else {
+        console.log(`Failed to scroll: index ${index} is out of bounds or invalid, total lines: ${lines.length}`);
+    }
+}
+
+
+function handleWordHighlighting(words, currentTime) {
+    const wordSpans = document.querySelectorAll('span[data-word-index]');
+    // Remove highlight from all spans first
+    wordSpans.forEach(span => span.classList.remove('highlight'));
+
+    // Iterate over each word to find which should be highlighted based on the current time
+    words.forEach((word, index) => {
+        if (currentTime >= word.start && currentTime < word.end) {
+            const wordSpans = document.querySelectorAll(`span[data-word-index="${word.index}"]`);
+            wordSpans.forEach(span => {
+                span.classList.add('highlight');
+                console.log(`Highlighted word: '${word.word}' from ${word.start}s to ${word.end}s at global index ${word.index}`);
+            });
+        }
+    });
+}
+
+audio.addEventListener('ended', () => {
+    console.log("Audio playback ended, clearing highlight interval.");
+});
+
+
+    </script>
+    </div>
+</body>
+</html>

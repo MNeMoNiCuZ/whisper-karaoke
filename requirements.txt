@@ -1,0 +1,3 @@
+﻿tkinterdnd2
+faster_whisper
+flask
