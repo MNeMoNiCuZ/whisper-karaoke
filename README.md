@@ -50,6 +50,8 @@ This launches a window which contains a flask server. In this window you should 
 3. Run `py app.py`
 4. Open the URL of the launched flask server.
 
+Note: Regarding the libraries, `tkinterdnd2` is only needed for the batch_convert.py script, and `flask` is only needed for the app.py script. `faster_whisper` is required by both.
+
 ## How to use
 Once you have launched the page successfully, you should see something like this.
 
