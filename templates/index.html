@@ -149,12 +149,58 @@ function fetchDataAndDisplayLyrics(filename) {
 
 function parseLines(text) {
     console.log("Starting parseLines");
-    return text.split('\n').map(line => {
+    const maxLineLength = 100; // Define maximum characters per line
+    return text.split('\n').flatMap(line => {
         const parts = line.match(/(\d+\.\d+)s -> (\d+\.\d+)s] (.+)/);
-        return parts ? {start: parseFloat(parts[1]), end: parseFloat(parts[2]), text: parts[3]} : null;
+        if (!parts) return null;
+
+        let { start, end, text: lineText } = {
+            start: parseFloat(parts[1]),
+            end: parseFloat(parts[2]),
+            text: parts[3]
+        };
+
+        // Split line into words and manage overlong lines
+        let words = lineText.split(' ');
+        let subLines = [];
+        let currentLine = "";
+        let currentLineStart = start;
+        let currentLineLength = 0; // Track length of characters actually added to lines
+
+        words.forEach((word, index) => {
+            if ((currentLine + " " + word).trim().length > maxLineLength) {
+                // Calculate time duration for this segment
+                let currentLineEnd = start + (end - start) * (currentLineLength / lineText.length);
+                subLines.push({
+                    start: currentLineStart,
+                    end: currentLineEnd,
+                    text: currentLine.trim()
+                });
+                currentLineStart = currentLineEnd;
+                currentLine = word; // Start new line with current word
+                currentLineLength += currentLine.length;
+            } else {
+                currentLine += (currentLine.length > 0 ? " " : "") + word;
+                currentLineLength += word.length + (currentLine.length > 0 ? 1 : 0); // Add 1 for the space if not the first word
+            }
+        });
+
+        // Push the last line if there's any residue
+        if (currentLine) {
+            let currentLineEnd = end; // End time for the last line
+            subLines.push({
+                start: currentLineStart,
+                end: currentLineEnd,
+                text: currentLine.trim()
+            });
+        }
+
+        return subLines;
     }).filter(Boolean);
     console.log("Finished parseLines");
 }
+
+
 
 function parseWords(text) {
     console.log("Starting parseWords");
