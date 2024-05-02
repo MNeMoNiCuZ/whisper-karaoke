@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -178,23 +178,20 @@ function displayLyrics(lines, words) {
 
     lines.forEach((line, lineIndex) => {
         let wordsForLine = [];
+        console.log(`Processing line ${lineIndex}: '${line.text}' with start ${line.start}s and end ${line.end}s`);
 
-        // Ensure that word collection correctly respects line boundaries
-        while (wordIndex < words.length && words[wordIndex].end < line.start) {
-            wordIndex++; // Skip words that end before the line starts
-        }
-
-        // Collect words that start and end within the line's time frame
-        while (wordIndex < words.length && words[wordIndex].start < line.end) {
-            if (words[wordIndex].start >= line.start && words[wordIndex].end <= line.end) {
+        // Adjust this to continue adding words as long as they don't finish before the line starts
+        while (wordIndex < words.length && words[wordIndex].end <= line.end) {
+            if (words[wordIndex].end > line.start) {
                 wordsForLine.push(words[wordIndex]);
+                console.log(`Adding word '${words[wordIndex].word}' at index ${wordIndex} to line ${lineIndex}`);
+            } else {
+                console.log(`Skipping word '${words[wordIndex].word}' at index ${wordIndex} because it ends at ${words[wordIndex].end}s before line start ${line.start}s`);
             }
-            if (words[wordIndex].end > line.end) break; // Stop adding words if the current word ends after the line
-            wordIndex++; // Increment wordIndex only if the word ends before the next line
+            wordIndex++;
         }
 
-        console.log(`Processing line ${lineIndex}: '${line.text}'`);
-        console.log(`Words for line ${lineIndex}: ${wordsForLine.map(w => `${w.word} (${w.start}s - ${w.end}s)`).join(', ')}`);
+        console.log(`Final words for line ${lineIndex}: ${wordsForLine.map(w => `${w.word} (${w.start}s - ${w.end}s)`).join(', ')}`);
         setupLineDisplay(line, wordsForLine);
     });
 
@@ -215,6 +212,7 @@ function setupLineDisplay(line, wordsForLine) {
     });
     document.getElementById('lyrics_display').appendChild(lineDiv);
 }
+
 
 function adjustLyricsContainerHeight() {
     // Use the first line if it exists to get computed styles, otherwise use default values
@@ -254,14 +252,14 @@ function setupHighlighting(lines, words) {
 }
 
 function handleLineHighlighting(currentLineIndex, lastHighlightedLineIndex) {
-    console.log(`Attempting to handle line highlighting. Current index: ${currentLineIndex}, Last index: ${lastHighlightedLineIndex}`);
+    // console.log(`Attempting to handle line highlighting. Current index: ${currentLineIndex}, Last index: ${lastHighlightedLineIndex}`);
     if (currentLineIndex !== lastHighlightedLineIndex) {
         console.log(`Line index changed from ${lastHighlightedLineIndex} to ${currentLineIndex}`);
         clearPreviousHighlights(lastHighlightedLineIndex);
         highlightCurrentLine(currentLineIndex);
         lastHighlightedLineIndex = currentLineIndex; // Update the last highlighted index after changing lines
     } else {
-        console.log(`No change in line index: remains at ${currentLineIndex}. No action taken.`);
+        // console.log(`No change in line index: remains at ${currentLineIndex}. No action taken.`);
     }
     return lastHighlightedLineIndex; // Ensure we return the updated index to maintain state across updates
 }
