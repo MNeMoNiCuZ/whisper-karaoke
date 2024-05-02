@@ -84,6 +84,10 @@ This should launch a small GUI window where you can drag multiple files onto. On
 There are bugs. Synchronization isn't perfect, transcription is not perfect, and there are several known bugs with the music player.
 Feel free to report issues, and even better, fix them :)
 
-- [ ] Sometimes the first words of lines are missing even though they are there in the words file.
+- [x] Sometimes the first words of lines are missing even though they are there in the words file.
 
-- [ ] Some tracks get really  messy overlapping text without linebreaks.
+- [x] Some tracks get really  messy overlapping text without linebreaks.
+
+- [ ] Words with overlapping timestamps should be pruned
+ 
+- [ ] Model word hallucinations, how can it be improved? Could we rerun with different seeds or models and merge outcome?
