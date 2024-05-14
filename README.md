@@ -36,6 +36,12 @@ GPU execution requires the following NVIDIA libraries to be installed:
 
 CUDA 12.4 has been tested and runs fine.
 
+> [!CAUTION]
+> I had big problems getting the cuDNN / cuBLAS to set up properly on Windows. The latest version that comes with an installer is not supported by faster-whisper, so this didn't work for me.
+> 
+> I ended up downloading this version: [https://github.com/Purfview/whisper-standalone-win/releases/tag/libs](https://github.com/Purfview/whisper-standalone-win/releases/tag/libs). The files can either be placed in `C:\Windows\System32\`, or in the same directory as the sythen script are in. Just unpack the 4 .dll-files and put them there and it should work.
+
+
 ## Installation
 ### Automatic installation
 Run `setup.bat` to create a virtual environment and install the requirements.
