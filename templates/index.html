@@ -21,6 +21,10 @@
             <div id="lyrics_display"></div>
         </div>
     <script>
+	// Global settings
+    const audioPlayerVolume = 0.5;
+    let visibleLinesCount = 3; //Only odd numbers space out evenly for now
+	
         document.getElementById('drop_area').addEventListener('dragover', (event) => {
             event.stopPropagation();
             event.preventDefault();
@@ -121,7 +125,7 @@ function loadAndDisplayKaraoke(filename) {
     audioPlayer.src = `/static/tracks/${filename}`;
     audioPlayer.load();
     audioPlayer.hidden = false;
-    audioPlayer.volume = 0.8;
+    audioPlayer.volume = audioPlayerVolume;
     audioPlayer.onloadedmetadata = () => {
         console.log(`Metadata loaded for audio: duration ${audioPlayer.duration}s`);
         fetchDataAndDisplayLyrics(filename);
@@ -261,21 +265,31 @@ function setupLineDisplay(line, wordsForLine) {
 
 
 function adjustLyricsContainerHeight() {
+    console.log("Starting adjustLyricsContainerHeight");
+
     // Use the first line if it exists to get computed styles, otherwise use default values
     const exampleLine = document.querySelector('.line');
     const styles = exampleLine ? getComputedStyle(exampleLine) : null;
-    
+
     // Fetch line height and margin from CSS or use defaults if not available
     const lineHeight = styles ? parseInt(styles.height, 10) : 40; // Default to 40 if no line is present
     const marginBottom = styles ? parseInt(styles.marginBottom, 10) : 5; // Default to 5 if no line is present
-    
-    const visibleLinesCount = 4; // Number of lines you want to display
-    const offset = -25; // Custom offset to adjust the container height
+
+    let localVisibleLinesCount = visibleLinesCount; // Use global setting
+    localVisibleLinesCount += 1; // Magic number fix, sorry
+
+    // Calculate the offset based on whether the line count is even or odd
+    const offset = localVisibleLinesCount % 2 === 1 ? -25 : -30;
 
     // Calculate the container height based on fetched styles and the specified number of lines
-    const containerHeight = (lineHeight + marginBottom) * visibleLinesCount - marginBottom + offset;
+    const containerHeight = (lineHeight + marginBottom) * localVisibleLinesCount - marginBottom + offset;
+    console.log(`lineHeight: ${lineHeight}, marginBottom: ${marginBottom}, localVisibleLinesCount: ${localVisibleLinesCount}, offset: ${offset}, containerHeight: ${containerHeight}`);
+
     document.getElementById('lyrics_container').style.height = `${containerHeight}px`;
+
+    console.log("Finished adjustLyricsContainerHeight");
 }
+
 
 // Ensure the container height is adjusted when the page is loaded or when styles might have changed
 window.onload = adjustLyricsContainerHeight;
