@@ -15,6 +15,15 @@ REM Creating virtual environment
 echo Creating virtual environment...
 python -m venv venv
 
+REM Add .gitignore to the virtual environment folder
+echo Creating .gitignore in the venv folder...
+(
+echo # Ignore all content in the virtual environment directory
+echo *
+echo # Except this file
+echo !.gitignore
+) > venv\.gitignore
+
 REM Activate the virtual environment
 call venv\Scripts\activate
 
@@ -29,22 +38,27 @@ REM Install requirements from the requirements.txt file
 echo Installing packages from requirements.txt...
 pip install -r requirements.txt
 
+REM Create launch.bat to run app.py
 echo Attempting to create launch.bat to run app.py...
-echo @echo off > launch.bat
-echo call venv\Scripts\activate >> launch.bat
-echo python app.py >> launch.bat
-echo echo. >> launch.bat
-echo echo Application exited. Press any key to close... >> launch.bat
-echo pause >> launch.bat
+(
+echo @echo off
+echo call venv\Scripts\activate
+echo python app.py
+echo echo.
+echo echo Application exited. Press any key to close...
+echo pause
+) > launch.bat
 echo launch.bat created successfully.
 
 echo Attempting to create batch_convert.bat to run batch_convert.py...
-echo @echo off > batch_convert.bat
-echo call venv\Scripts\activate >> batch_convert.bat
-echo python batch_convert.py >> batch_convert.bat
-echo echo. >> batch_convert.bat
-echo echo Batch conversion completed. Press any key to close... >> batch_convert.bat
-echo pause >> batch_convert.bat
+(
+echo @echo off
+echo call venv\Scripts\activate
+echo python batch_convert.py
+echo echo.
+echo echo Batch conversion completed. Press any key to close...
+echo pause
+) > batch_convert.bat
 echo batch_convert.bat created successfully.
 
 :end
